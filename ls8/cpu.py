@@ -76,11 +76,10 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        IR = 0
-        HLT = 1
-        LDI = 130
-        PRN = 71
-        MUL = 162
+        HLT = 0b00000001
+        LDI = 0b10000010
+        PRN = 0b01000111
+        MUL = 0b10100010
         halted = False
         while not halted:
             IR = self.ram_read(self.pc)

@@ -57,6 +57,7 @@ class CPU:
         there
         """
         val = self.ram[address]
+        print(val)
         # print("{:010b}".format(val, '08b'))
         return "{:08b}".format(val)
 

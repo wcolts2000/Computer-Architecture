@@ -15,22 +15,32 @@ class CPU:
         """Load a program into memory."""
 
         address = 0
-
+        filename = sys.argv[1]
         # For now, we've just hardcoded a program:
 
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
-        ]
+        # program = [
+        #     # From print8.ls8
+        #     0b10000010, # LDI R0,8
+        #     0b00000000,
+        #     0b00001000,
+        #     0b01000111, # PRN R0
+        #     0b00000000,
+        #     0b00000001, # HLT
+        # ]
 
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
+        with open(filename) as fp:
+
+            # for instruction in fp:
+            for line in fp:
+                line = line.split("#")[0]
+                line = line.strip()
+
+                if line == "":
+                    continue
+                self.ram[address] = int(line, 2)
+                address += 1
+
+            # print(self.ram)
 
 
     def alu(self, op, reg_a, reg_b):
@@ -48,7 +58,7 @@ class CPU:
         """
         val = self.ram[address]
         # print("{:010b}".format(val, '08b'))
-        return "{:08b}".format(val, '08b')
+        return "{:08b}".format(val)
 
     def ram_write(self, value, address):
         """

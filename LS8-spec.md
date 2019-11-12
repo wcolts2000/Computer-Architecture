@@ -156,7 +156,8 @@ Meanings of the bits in the first byte of each instruction: `AABCDDDD`
 * `AA` Number of operands for this opcode, 0-2
 * `B` 1 if this is an ALU operation
 * `C` 1 if this instruction sets the PC
-* `DDDD` Instruction identifier
+check the readme
+
 
 The number of operands `AA` is useful to know because the total number of bytes in any
 instruction is the number of operands + 1 (for the opcode). This

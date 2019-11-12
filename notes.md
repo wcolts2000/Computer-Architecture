@@ -8,6 +8,7 @@
 1. The Halting Problem
 1. The Church-Turing Thesis
 1. Churches Lambda Calculus
+1. Hackers Delight (website)
 
 ## Number Bases
 ---

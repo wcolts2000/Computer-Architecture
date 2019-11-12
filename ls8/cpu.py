@@ -58,7 +58,7 @@ class CPU:
         """
         val = self.ram[address]
         # print("{:010b}".format(val, '08b'))
-        return "{:08b}".format(val)
+        return int("{:08b}".format(val))
 
     def ram_write(self, value, address):
         """

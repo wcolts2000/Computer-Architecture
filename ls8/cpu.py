@@ -4,11 +4,13 @@ import sys
 
 class CPU:
     """Main CPU class."""
-
     def __init__(self):
         """Construct a new CPU."""
-        pass
-
+        self.ram = [0] * 256
+        self.reg = [0] * 8
+        self.pc = 0 # program counter
+        self.ir = self.ram[self.pc] # instruction register
+        self.fl = 0 # flags -> 00000LGE -> L == <, G == >, E == == 
     def load(self):
         """Load a program into memory."""
 
@@ -36,9 +38,23 @@ class CPU:
 
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
-        #elif op == "SUB": etc
         else:
             raise Exception("Unsupported ALU operation")
+    
+    def ram_read(self, address):
+        """
+        should accept the address to read and return the value stored
+        there
+        """
+        val = self.ram[address]
+        # print("{:010b}".format(val, '08b'))
+        return "{:08b}".format(val, '08b')
+
+    def ram_write(self, value, address):
+        """
+        should accept a value to write, and the address to write it to.
+        """
+        self.reg[address] = value
 
     def trace(self):
         """
@@ -46,7 +62,7 @@ class CPU:
         from run() if you need help debugging.
         """
 
-        print(f"TRACE: %02X | %02X %02X %02X |" % (
+        print(f"TRACE: %02X | %02X %02X %02X | \n" % (
             self.pc,
             #self.fl,
             #self.ie,
@@ -62,4 +78,28 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        pass
+        IR = 0
+        HLT = 1
+        LDI = 2
+        PRN = 7
+        halted = False
+        while not halted:
+            IR = self.ram_read(self.pc)
+            operand_a = int(str(self.ram_read(self.pc + 1)), 2)
+            operand_b = int(str(self.ram_read(self.pc + 2)), 2)
+            op_string = int(str(IR)[-4:], 2)
+            inc_pc = int(str(IR)[:2], 2) + 1
+
+            # print(IR, "\n", inc_pc, "FFF")
+            if op_string == HLT:
+                halted = True
+                self.pc += inc_pc
+            elif op_string == LDI:
+                self.ram_write(operand_b, operand_a)
+                self.pc += inc_pc
+            elif op_string == PRN:
+                print(self.reg[operand_a])
+                self.pc += inc_pc
+            else:
+                print(f"ERROR: operation {op_string} unknown")
+                sys.exit(1)

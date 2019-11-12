@@ -1,5 +1,6 @@
 # Project: The LS-8 Emulator
 
+### DAY 1 Start
 ## Implementation of the LS-8 Emulator
 
 _Objective_: to gain a deeper understanding of how a CPU functions at a
@@ -20,7 +21,7 @@ then prints it out:
 ```
 # print8.ls8: Print the number 8 on the screen
 
-10000010 # LDI R0,8
+10000010 # LDI R0,8  NOTE: 10000010 = 10: 2 operands, 0: not an alu, 0: does not set PC, 0010: instruction id  
 00000000
 00001000
 01000111 # PRN R0
@@ -89,13 +90,13 @@ the `CPU` object.
 `ram_read()` should accept the address to read and return the value stored
 there.
 
-`raw_write()` should accept a value to write, and the address to write it to.
+`ram_write()` should accept a value to write, and the address to write it to.
 
 > Inside the CPU, there are two internal registers used for memory operations:
 > the _Memory Address Register_ (MAR) and the _Memory Data Register_ (MDR). The
 > MAR contains the address that is being read or written to. The MDR contains
 > the data that was read or the data to write. You don't need to add the MAR or
-> MDR to your `CPU` class, but they would make handy paramter names for
+> MDR to your `CPU` class, but they would make handy parameter names for
 > `ram_read()` and `ram_write()`, if you wanted.
 
 We'll make use of these helper function later.
@@ -153,6 +154,9 @@ the LS-8 spec.
 
 *At this point, you should be able to run the program and have it print `8` to
 the console!*
+### DAY 1 END
+
+### DAY 2 Start
 
 ## Step 7: Un-hardcode the machine code
 

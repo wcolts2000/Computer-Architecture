@@ -100,7 +100,7 @@ If a bit is set:
 5. Registers R0-R6 are pushed on the stack in that order.
 6. The address (_vector_ in interrupt terminology) of the appropriate
    handler is looked up from the interrupt vector table.
-7. Set the PC is set to the handler address.
+7. Set the PC to the handler address.
 
 While an interrupt is being serviced (between the handler being called
 and the `IRET`), further interrupts are disabled.
@@ -118,7 +118,7 @@ See `IRET`, below, for returning from an interrupt.
 When the LS-8 is booted, the following steps occur:
 
 * `R0`-`R6` are cleared to `0`.
-* `R7` is set to `0xF4`.
+* `R7` is set to `0xF4`. NOTE -> 244
 * `PC` and `FL` registers are cleared to `0`.
 * RAM is cleared to `0`.
 

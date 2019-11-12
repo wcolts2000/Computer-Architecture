@@ -16,21 +16,9 @@ class CPU:
 
         address = 0
         filename = sys.argv[1]
-        # For now, we've just hardcoded a program:
-
-        # program = [
-        #     # From print8.ls8
-        #     0b10000010, # LDI R0,8
-        #     0b00000000,
-        #     0b00001000,
-        #     0b01000111, # PRN R0
-        #     0b00000000,
-        #     0b00000001, # HLT
-        # ]
 
         with open(filename) as fp:
 
-            # for instruction in fp:
             for line in fp:
                 line = line.split("#")[0]
                 line = line.strip()
@@ -40,14 +28,14 @@ class CPU:
                 self.ram[address] = int(line, 2)
                 address += 1
 
-            # print(self.ram)
-
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
 
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
+        elif op == "MUL":
+            self.reg[reg_a] *= self.reg[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
     
@@ -57,7 +45,6 @@ class CPU:
         there
         """
         val = self.ram[address]
-        print(val)
         # print("{:010b}".format(val, '08b'))
         return "{:08b}".format(val)
 
@@ -91,14 +78,15 @@ class CPU:
         """Run the CPU."""
         IR = 0
         HLT = 1
-        LDI = 2
-        PRN = 7
+        LDI = 130
+        PRN = 71
+        MUL = 162
         halted = False
         while not halted:
             IR = self.ram_read(self.pc)
             operand_a = int(str(self.ram_read(self.pc + 1)), 2)
             operand_b = int(str(self.ram_read(self.pc + 2)), 2)
-            op_string = int(str(IR)[-4:], 2)
+            op_string = int(str(IR), 2)
             inc_pc = int(str(IR)[:2], 2) + 1
 
             # print(IR, "\n", inc_pc, "FFF")
@@ -110,6 +98,9 @@ class CPU:
                 self.pc += inc_pc
             elif op_string == PRN:
                 print(self.reg[operand_a])
+                self.pc += inc_pc
+            elif op_string == MUL:
+                self.alu("MUL", operand_a, operand_b)
                 self.pc += inc_pc
             else:
                 print(f"ERROR: operation {op_string} unknown")

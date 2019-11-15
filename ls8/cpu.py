@@ -2,18 +2,36 @@
 
 import sys
 
+# opcodes
+HLT = 0b00000001
+LDI = 0b10000010
+PRN = 0b01000111
+MUL = 0b10100010
+# reserved registers
+IM = 5
+IS = 6
+SP = 7
+
 class CPU:
     """Main CPU class."""
     def __init__(self):
         """Construct a new CPU."""
+        self.halted = False
         self.ram = [0] * 256
         self.reg = [0] * 8
+        self.reg[SP] = 0xf4
         self.pc = 0 # program counter
         self.ir = self.ram[self.pc] # instruction register
         self.fl = 0 # flags -> 00000LGE -> L == <, G == >, E == == 
+
+        self.bt = {
+            HLT: self.halt,
+            LDI: self.ldi,
+            PRN: self.prn,
+            MUL: self.mul,
+        }
     def load(self):
         """Load a program into memory."""
-
         address = 0
         filename = sys.argv[1]
 
@@ -44,9 +62,8 @@ class CPU:
         should accept the address to read and return the value stored
         there
         """
-        val = self.ram[address]
-        # print("{:010b}".format(val, '08b'))
-        return "{:08b}".format(val)
+        return self.ram[address]
+        # return "{:08b}".format(val)
 
     def ram_write(self, value, address):
         """
@@ -74,33 +91,44 @@ class CPU:
 
         print()
 
+    def halt(self, operand_a, operand_b):
+        self.halted = True
+    def ldi(self, operand_a, operand_b):
+        self.ram_write(operand_b, operand_a)
+    def prn(self, operand_a, operand_b):
+        print(self.reg[operand_a])
+    def mul(self, operand_a, operand_b):
+        self.alu("MUL", operand_a, operand_b)
+
     def run(self):
         """Run the CPU."""
-        HLT = 0b00000001
-        LDI = 0b10000010
-        PRN = 0b01000111
-        MUL = 0b10100010
-        halted = False
-        while not halted:
-            IR = self.ram_read(self.pc)
-            operand_a = int(str(self.ram_read(self.pc + 1)), 2)
-            operand_b = int(str(self.ram_read(self.pc + 2)), 2)
-            op_string = int(str(IR), 2)
-            inc_pc = int(str(IR)[:2], 2) + 1
+        # opcodes
+        while not self.halted:
+            IR = self.ram[self.pc]
+            operand_a = self.ram_read(self.pc + 1)
+            operand_b = self.ram_read(self.pc + 2)
+            # inc_pc = int(str(IR)[:2], 2) + 1
+            inc_pc = ((IR >> 6) & 0b11) + 1
+            sets_pc = ((IR >> 4) & 0b1) == 1
+            
 
-            # print(IR, "\n", inc_pc, "FFF")
-            if op_string == HLT:
-                halted = True
-                self.pc += inc_pc
-            elif op_string == LDI:
-                self.ram_write(operand_b, operand_a)
-                self.pc += inc_pc
-            elif op_string == PRN:
-                print(self.reg[operand_a])
-                self.pc += inc_pc
-            elif op_string == MUL:
-                self.alu("MUL", operand_a, operand_b)
-                self.pc += inc_pc
+            # if op_string == HLT:
+            #     halted = True
+            #     self.pc += inc_pc
+            # elif op_string == LDI:
+            #     self.ram_write(operand_b, operand_a)
+            #     self.pc += inc_pc
+            # elif op_string == PRN:
+            #     print(self.reg[operand_a])
+            #     self.pc += inc_pc
+            # elif op_string == MUL:
+            #     self.alu("MUL", operand_a, operand_b)
+            #     self.pc += inc_pc
+            if IR in self.bt:
+                self.bt[IR](operand_a, operand_b)
             else:
                 print(f"ERROR: operation {op_string} unknown")
                 sys.exit(1)
+
+            if not sets_pc:
+                self.pc += inc_pc

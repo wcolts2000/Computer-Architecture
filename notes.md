@@ -2,13 +2,13 @@
 
 1. the annotated turning
 1. the elements of computing systems
+1. Hackers Delight 
 
 ## Other topics to look into
 
 1. The Halting Problem
 1. The Church-Turing Thesis
 1. Churches Lambda Calculus
-1. Hackers Delight (website)
 
 ## Number Bases
 ---

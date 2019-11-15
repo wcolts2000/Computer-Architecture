@@ -7,6 +7,8 @@ HLT = 0b00000001
 LDI = 0b10000010
 PRN = 0b01000111
 MUL = 0b10100010
+PSH = 0b01000101
+POP = 0b01000110
 # reserved registers
 IM = 5
 IS = 6
@@ -29,6 +31,8 @@ class CPU:
             LDI: self.ldi,
             PRN: self.prn,
             MUL: self.mul,
+            PSH: self.psh,
+            POP: self.pop,
         }
     def load(self):
         """Load a program into memory."""
@@ -68,7 +72,7 @@ class CPU:
         """
         should accept a value to write, and the address to write it to.
         """
-        self.reg[address] = value
+        self.ram[address] = value
 
     def trace(self):
         """
@@ -93,11 +97,29 @@ class CPU:
     def halt(self, operand_a, operand_b):
         self.halted = True
     def ldi(self, operand_a, operand_b):
-        self.ram_write(operand_b, operand_a)
+        self.reg[operand_a] = operand_b
     def prn(self, operand_a, operand_b):
         print(self.reg[operand_a])
     def mul(self, operand_a, operand_b):
         self.alu("MUL", operand_a, operand_b)
+    def psh(self, operand_a, operand_b):
+        self.reg[SP] -= 1
+        self.ram_write(self.reg[operand_a], self.reg[7])
+        
+    def pop(self, operand_a, operand_b):
+        num = self.ram_read(self.reg[7])
+        self.reg[SP] += 1
+        self.reg[operand_a] = num
+
+#     def push_val(self, val):
+#         self.reg[SP] -= 1
+#         self.ram_write(val, self.reg[7])
+        
+#     def pop_val(self):
+#         val = self.ram_read(self.reg[7])
+#         self.reg[SP] += 1
+# ​
+#         return val
 
     def run(self):
         """Run the CPU."""
@@ -113,7 +135,7 @@ class CPU:
             if IR in self.bt:
                 self.bt[IR](operand_a, operand_b)
             else:
-                print(f"ERROR: operation {op_string} unknown")
+                print(f"ERROR: operation {IR} unknown")
                 sys.exit(1)
 
             if not sets_pc:

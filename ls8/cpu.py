@@ -63,7 +63,6 @@ class CPU:
         there
         """
         return self.ram[address]
-        # return "{:08b}".format(val)
 
     def ram_write(self, value, address):
         """
@@ -110,20 +109,7 @@ class CPU:
             # inc_pc = int(str(IR)[:2], 2) + 1
             inc_pc = ((IR >> 6) & 0b11) + 1
             sets_pc = ((IR >> 4) & 0b1) == 1
-            
 
-            # if op_string == HLT:
-            #     halted = True
-            #     self.pc += inc_pc
-            # elif op_string == LDI:
-            #     self.ram_write(operand_b, operand_a)
-            #     self.pc += inc_pc
-            # elif op_string == PRN:
-            #     print(self.reg[operand_a])
-            #     self.pc += inc_pc
-            # elif op_string == MUL:
-            #     self.alu("MUL", operand_a, operand_b)
-            #     self.pc += inc_pc
             if IR in self.bt:
                 self.bt[IR](operand_a, operand_b)
             else:

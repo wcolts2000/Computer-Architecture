@@ -2,33 +2,53 @@
 
 import sys
 
+# opcodes
+HLT = 0b00000001
+LDI = 0b10000010
+PRN = 0b01000111
+MUL = 0b10100010
+PSH = 0b01000101
+POP = 0b01000110
+# reserved registers
+IM = 5
+IS = 6
+SP = 7
+
 class CPU:
     """Main CPU class."""
-
     def __init__(self):
         """Construct a new CPU."""
-        pass
+        self.halted = False
+        self.ram = [0] * 256
+        self.reg = [0] * 8
+        self.reg[SP] = 0xf4
+        self.pc = 0 # program counter
+        self.ir = self.ram[self.pc] # instruction register
+        self.fl = 0 # flags -> 00000LGE -> L == <, G == >, E == == 
 
+        self.bt = {
+            HLT: self.halt,
+            LDI: self.ldi,
+            PRN: self.prn,
+            MUL: self.mul,
+            PSH: self.psh,
+            POP: self.pop,
+        }
     def load(self):
         """Load a program into memory."""
-
         address = 0
+        filename = sys.argv[1]
 
-        # For now, we've just hardcoded a program:
+        with open(filename) as fp:
 
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
-        ]
+            for line in fp:
+                line = line.split("#")[0]
+                line = line.strip()
 
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
+                if line == "":
+                    continue
+                self.ram[address] = int(line, 2)
+                address += 1
 
 
     def alu(self, op, reg_a, reg_b):
@@ -36,9 +56,23 @@ class CPU:
 
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
-        #elif op == "SUB": etc
+        elif op == "MUL":
+            self.reg[reg_a] *= self.reg[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
+    
+    def ram_read(self, address):
+        """
+        should accept the address to read and return the value stored
+        there
+        """
+        return self.ram[address]
+
+    def ram_write(self, value, address):
+        """
+        should accept a value to write, and the address to write it to.
+        """
+        self.ram[address] = value
 
     def trace(self):
         """
@@ -46,7 +80,7 @@ class CPU:
         from run() if you need help debugging.
         """
 
-        print(f"TRACE: %02X | %02X %02X %02X |" % (
+        print(f"TRACE: %02X | %02X %02X %02X | \n" % (
             self.pc,
             #self.fl,
             #self.ie,
@@ -60,6 +94,49 @@ class CPU:
 
         print()
 
+    def halt(self, operand_a, operand_b):
+        self.halted = True
+    def ldi(self, operand_a, operand_b):
+        self.reg[operand_a] = operand_b
+    def prn(self, operand_a, operand_b):
+        print(self.reg[operand_a])
+    def mul(self, operand_a, operand_b):
+        self.alu("MUL", operand_a, operand_b)
+    def psh(self, operand_a, operand_b):
+        self.reg[SP] -= 1
+        self.ram_write(self.reg[operand_a], self.reg[7])
+        
+    def pop(self, operand_a, operand_b):
+        num = self.ram_read(self.reg[7])
+        self.reg[SP] += 1
+        self.reg[operand_a] = num
+
+#     def push_val(self, val):
+#         self.reg[SP] -= 1
+#         self.ram_write(val, self.reg[7])
+        
+#     def pop_val(self):
+#         val = self.ram_read(self.reg[7])
+#         self.reg[SP] += 1
+# ​
+#         return val
+
     def run(self):
         """Run the CPU."""
-        pass
+        # opcodes
+        while not self.halted:
+            IR = self.ram[self.pc]
+            operand_a = self.ram_read(self.pc + 1)
+            operand_b = self.ram_read(self.pc + 2)
+            # inc_pc = int(str(IR)[:2], 2) + 1
+            inc_pc = ((IR >> 6) & 0b11) + 1
+            sets_pc = ((IR >> 4) & 0b1) == 1
+
+            if IR in self.bt:
+                self.bt[IR](operand_a, operand_b)
+            else:
+                print(f"ERROR: operation {IR} unknown")
+                sys.exit(1)
+
+            if not sets_pc:
+                self.pc += inc_pc
